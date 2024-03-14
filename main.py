@@ -11,8 +11,8 @@ plt.rcParams['font.family'] ='Malgun Gothic'
 with st.sidebar:
   selected = option_menu(
     menu_title = "Main Menu",
-    options = ["Home","Projects", "Map", "Contact"],
-    icons = ["house","rocket","map","envelope"],
+    options = ["Home","Projects", "Map", "Entering" ,"Contact"],
+    icons = ["house","rocket","map", "door" ,"envelope"],
     menu_icon = "cast",
     default_index = 0,
 
@@ -28,7 +28,7 @@ if selected == "Home":
     st.header("Welcome InnovationPARK !!")
 
 elif selected == "Projects":
-    st.header(":church:지역별 지식산업센터 수")
+    st.header(":church: 지역별 지식산업센터 수")
 
     # 지역별 지식산업센터 수 집계
     region_counts = df['시군명'].value_counts()
@@ -66,10 +66,49 @@ elif selected == "Map":
 
     # 데이터프레임의 각 행에 대하여 위치를 지도에 표시
     for idx, row in df.iterrows():
-        folium.Marker([row['위도'], row['경도']]).add_to(m)
+        folium.Marker([row['위도'], row['경도']], tooltip=row['지식산업센터명칭']).add_to(m)
 
     # Streamlit에서 지도 표시
     st_folium(m, width=700, height=500)
+
+
+
+
+
+if selected == "Entering":
+    st.header("지역별 입주율")
+    # 지역별 지식산업센터 수 집계
+    df['입주율'] = pd.to_numeric(df['입주율'], errors='coerce')
+    df['입주율'].fillna(0, inplace=True)
+    
+    region_counts = df['입주율'].value_counts()
+
+    # 사용자가 '시군명'을 선택할 수 있는 드롭다운 메뉴 생성
+    unique_regions = df['시군명'].unique()
+    selected_region = st.selectbox("지역을 선택하세요", unique_regions)
+
+    # 선택된 지역에 대한 데이터 필터링
+    filtered_df = df[df['시군명'] == selected_region]
+
+    # 필터링된 데이터 기반으로 입주율 계산 (예시: 평균 입주율)
+    # 실제 데이터에 따라 계산 방식이 달라질 수 있으니 적절히 조정 필요
+    average_occupancy_rate = filtered_df['입주율'].mean()
+
+    # 결과 시각화
+    plt.figure(figsize=(10, 6))
+    plt.bar(selected_region, average_occupancy_rate)
+    plt.title(f"{selected_region} 지역의 평균 입주율")
+    plt.xlabel('지역')
+    plt.ylabel('평균 입주율')
+    st.pyplot(plt)
+
+
+
+
+
+
+
+
 
 elif selected == "Contact":
     st.header("연락처")
