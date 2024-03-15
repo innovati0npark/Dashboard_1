@@ -6,7 +6,7 @@ from streamlit_option_menu import option_menu
 import folium
 from streamlit_folium import st_folium
 
-plt.rcParams['font.family'] ='Malgun Gothic'
+plt.rcParams['font.family'] ='D2Coding'
 
 with st.sidebar:
   selected = option_menu(
@@ -75,11 +75,13 @@ elif selected == "Map":
 
 
 
-if selected == "Entering":
-    st.header("지역별 입주율")
+elif selected == "Entering":
+    st.header("지역별 입주율(선택지역)")
+
     # 지역별 지식산업센터 수 집계
     df['입주율'] = pd.to_numeric(df['입주율'], errors='coerce')
-    df['입주율'].fillna(0, inplace=True)
+    df.fillna({'입주율': 0}, inplace=True)
+    
     
     region_counts = df['입주율'].value_counts()
 
@@ -90,12 +92,14 @@ if selected == "Entering":
     # 선택된 지역에 대한 데이터 필터링
     filtered_df = df[df['시군명'] == selected_region]
 
-    # 필터링된 데이터 기반으로 입주율 계산 (예시: 평균 입주율)
-    # 실제 데이터에 따라 계산 방식이 달라질 수 있으니 적절히 조정 필요
+    
     average_occupancy_rate = filtered_df['입주율'].mean()
 
     # 결과 시각화
-    plt.figure(figsize=(10, 6))
+    st.write(f"{selected_region} 지역의 평균 입주율: {average_occupancy_rate:.2f}%")
+
+    # # 결과 시각화
+    plt.figure(figsize=(4, 3))
     plt.bar(selected_region, average_occupancy_rate)
     plt.title(f"{selected_region} 지역의 평균 입주율")
     plt.xlabel('지역')
@@ -103,16 +107,42 @@ if selected == "Entering":
     st.pyplot(plt)
 
 
+    st.header("지역별 입주율(전체지역)")
+    ## 입주율이 0.1 이상인 지역들만 필터링
+    filtered_df = df[df.groupby('시군명')['입주율'].transform('mean') > 0.1]
+
+    # 필터링된 데이터를 기반으로 평균 입주율 계산
+    average_entering_rate = filtered_df.groupby('시군명')['입주율'].mean()
+
+    # 결과 시각화
+    plt.figure(figsize=(10, 6))
+    plt.bar(average_entering_rate.index, average_entering_rate.values)
+    # plt.axhline(y=average_entering_rate, color='r', linestyle='--')
+    plt.title('지역별 평균 입주율')
+    plt.xlabel('지역')
+    plt.ylabel('입주율')
+    st.pyplot(plt)
+    
 
 
 
+# elif selected == "Contact":
+#     st.header("연락처")
+#     # 연락처 정보 또는 양식을 여기에 추가
+#     st.write("01074252558")
 
+# st.header("지역별 입주율(전체지역)")
+# ## 입주율이 0.1 이상인 지역들만 필터링
+# filtered_df = df[df['입주율'] > 0.1]
 
+# # 필터링된 데이터를 기반으로 평균 입주율 계산
+# average_entering_rate = filtered_df.groupby('시군명')['입주율'].mean()
 
-
-elif selected == "Contact":
-    st.header("연락처")
-    # 연락처 정보 또는 양식을 여기에 추가
-    st.write("01074252558")
-
-
+# # 결과 시각화
+# plt.figure(figsize=(10, 6))
+# plt.bar(average_entering_rate.index, average_entering_rate.values)
+# # plt.axhline(y=average_entering_rate, color='r', linestyle='--')
+# plt.title('지역별 평균 입주율')
+# plt.xlabel('지역')
+# plt.ylabel('입주율')
+# st.pyplot(plt)
