@@ -11,8 +11,8 @@ plt.rcParams['font.family'] ='D2Coding'
 with st.sidebar:
   selected = option_menu(
     menu_title = "Main Menu",
-    options = ["Home","Projects", "Map", "Entering" ,"Contact"],
-    icons = ["house","rocket","map", "door" ,"envelope"],
+    options = ["Home","Projects", "Map", "Entering" ,"Ranking"],
+    icons = ["house", "rocket","map", "door" ,"prize"],
     menu_icon = "cast",
     default_index = 0,
 
@@ -109,10 +109,10 @@ elif selected == "Entering":
 
     st.header("지역별 입주율(전체지역)")
     ## 입주율이 0.1 이상인 지역들만 필터링
-    filtered_df = df[df.groupby('시군명')['입주율'].transform('mean') > 0.1]
+    mean_df = df[df.groupby('시군명')['입주율'].transform('mean') > 0.4]
 
     # 필터링된 데이터를 기반으로 평균 입주율 계산
-    average_entering_rate = filtered_df.groupby('시군명')['입주율'].mean()
+    average_entering_rate = mean_df.groupby('시군명')['입주율'].mean()
 
     # 결과 시각화
     plt.figure(figsize=(10, 6))
@@ -122,7 +122,23 @@ elif selected == "Entering":
     plt.xlabel('지역')
     plt.ylabel('입주율')
     st.pyplot(plt)
-    
+
+
+
+elif selected == "Ranking":
+    # 평균 입주율을 기준으로 데이터 정렬
+    df['입주율'] = pd.to_numeric(df['입주율'], errors='coerce')
+    df.fillna({'입주율': 0}, inplace=True)
+    raw_ranking_df = df[df.groupby('시군명')['입주율'].transform('mean') > 0.1]
+    sorted_df = raw_ranking_df.groupby('시군명')['입주율'].mean().sort_values(ascending=False)
+
+    # 순위 매기기
+    sorted_df = sorted_df.reset_index()
+    sorted_df['순위'] = range(1, len(sorted_df) + 1)
+
+    # 결과 출력
+    st.header("입주율 높은 지역 순위")
+    st.dataframe(sorted_df[['순위', '시군명', '입주율']])
 
 
 
